@@ -7,39 +7,61 @@ import {
   TextField,
   Typography
 } from "@material-ui/core";
-import { getBridges } from "../apis/hue";
+import { connectToBridge, getBridges } from "../apis/hue";
 
 interface State {
   bridgeAddress: string;
+  username: string;
 }
 
 export default class extends Component<any, State> {
   constructor(props: any) {
     super(props);
     this.state = {
-      bridgeAddress: ""
+      bridgeAddress: window.localStorage.getItem("bridgeAddress") || "",
+      username: window.localStorage.getItem("username") || ""
     };
   }
 
-  _detectBrdiges = () => {
-    getBridges()
-      .then(bridges => {
-        if (bridges.length === 0) {
-        } else if (bridges.length === 1) {
-          this.setState({ bridgeAddress: bridges[0].internalipaddress });
-        } else {
-        }
-      })
-      .catch(err => {
-        alert(
-          "There was an unexpected error encountered when detecting bridges."
-        );
-        console.error(err);
-      });
+  _connect = async () => {
+    const { bridgeAddress } = this.state;
+    try {
+      const username = await connectToBridge(bridgeAddress);
+      window.localStorage.setItem("username", username);
+      this.setState({ username });
+    } catch (err) {
+      alert(err);
+    }
+  };
+
+  _detectBrdiges = async () => {
+    try {
+      const bridges = await getBridges();
+      if (bridges.length === 0) {
+        alert("No bridges detected!");
+      } else if (bridges.length === 1) {
+        const bridgeAddress = bridges[0].internalipaddress;
+        this.setState({ bridgeAddress });
+        window.localStorage.setItem("bridgeAddress", bridgeAddress);
+      } else {
+        alert("Multiple bridges found! This is currently not supported!");
+      }
+    } catch (err) {
+      alert(
+        "There was an unexpected error encountered when detecting bridges."
+      );
+      console.error(err);
+    }
   };
 
   render() {
     const { bridgeAddress } = this.state;
+
+    const canConnect =
+      bridgeAddress.length !== 0 &&
+      (bridgeAddress !== (window.localStorage.getItem("bridgeAddress") || "") ||
+        !window.localStorage.getItem("username"));
+
     return (
       <div
         style={{
@@ -65,7 +87,8 @@ export default class extends Component<any, State> {
               <Button
                 variant="contained"
                 color="primary"
-                disabled={bridgeAddress.length === 0}
+                onClick={this._connect}
+                disabled={!canConnect}
               >
                 Connect
               </Button>
