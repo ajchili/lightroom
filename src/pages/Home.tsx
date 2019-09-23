@@ -7,7 +7,7 @@ import {
   TextField,
   Typography
 } from "@material-ui/core";
-import { connectToBridge, getBridges } from "../apis/hue";
+import { connectToBridge, getBridges, getLights } from "../apis/hue";
 
 interface State {
   bridgeAddress: string;
@@ -21,6 +21,7 @@ export default class extends Component<any, State> {
       bridgeAddress: window.localStorage.getItem("bridgeAddress") || "",
       username: window.localStorage.getItem("username") || ""
     };
+    this._detectLights();
   }
 
   _connect = async () => {
@@ -29,6 +30,7 @@ export default class extends Component<any, State> {
       const username = await connectToBridge(bridgeAddress);
       window.localStorage.setItem("username", username);
       this.setState({ username });
+      this._detectLights();
     } catch (err) {
       alert(err);
     }
@@ -51,6 +53,15 @@ export default class extends Component<any, State> {
         "There was an unexpected error encountered when detecting bridges."
       );
       console.error(err);
+    }
+  };
+
+  _detectLights = async () => {
+    const { bridgeAddress, username } = this.state;
+
+    if (bridgeAddress && username) {
+      const lights = await getLights(bridgeAddress, username);
+      console.log(lights);
     }
   };
 
