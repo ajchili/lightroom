@@ -4,13 +4,24 @@ import {
   ButtonGroup,
   Card,
   CardContent,
+  Grid,
+  Switch,
   TextField,
   Typography
 } from "@material-ui/core";
-import { connectToBridge, getBridges, getLights } from "../apis/hue";
+import {
+  connectToBridge,
+  getBridges,
+  getLights,
+  Light,
+  LightState,
+  updateLight
+} from "../apis/hue";
 
 interface State {
   bridgeAddress: string;
+  fetchLightsInterval?: NodeJS.Timeout;
+  lights: Array<Light>;
   username: string;
 }
 
@@ -19,7 +30,8 @@ export default class extends Component<any, State> {
     super(props);
     this.state = {
       bridgeAddress: window.localStorage.getItem("bridgeAddress") || "",
-      username: window.localStorage.getItem("username") || ""
+      username: window.localStorage.getItem("username") || "",
+      lights: []
     };
     this._detectLights();
   }
@@ -57,16 +69,41 @@ export default class extends Component<any, State> {
   };
 
   _detectLights = async () => {
-    const { bridgeAddress, username } = this.state;
+    const { bridgeAddress, fetchLightsInterval, username } = this.state;
 
     if (bridgeAddress && username) {
-      const lights = await getLights(bridgeAddress, username);
-      console.log(lights);
+      try {
+        const lights = await getLights(bridgeAddress, username);
+        this.setState({ lights });
+        if (!fetchLightsInterval) {
+          const interval = setInterval(this._detectLights, 2500);
+          this.setState({ fetchLightsInterval: interval });
+        }
+      } catch (err) {
+        if (fetchLightsInterval) {
+          clearInterval(fetchLightsInterval);
+        }
+      }
+    }
+  };
+
+  _updateLight = async (light: number, state: LightState) => {
+    const { bridgeAddress, username } = this.state;
+
+    console.log(state);
+
+    if (bridgeAddress && username) {
+      try {
+        await updateLight(bridgeAddress, username, light, state);
+        await this._detectLights();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   render() {
-    const { bridgeAddress } = this.state;
+    const { bridgeAddress, lights } = this.state;
 
     const canConnect =
       bridgeAddress.length !== 0 &&
@@ -94,7 +131,7 @@ export default class extends Component<any, State> {
                 this.setState({ bridgeAddress: event.target.value });
               }}
             />
-            <ButtonGroup aria-label="outlined button group">
+            <ButtonGroup>
               <Button
                 variant="contained"
                 color="primary"
@@ -112,6 +149,28 @@ export default class extends Component<any, State> {
                 Detect
               </Button>
             </ButtonGroup>
+            <Grid container spacing={3} style={{ marginTop: 5 }}>
+              {lights.map((light: Light, i: number) => {
+                return (
+                  <Grid key={light.uniqueid} item xs={12} sm={6} md={4}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h5">
+                          {light.name}{" "}
+                          <Switch
+                            checked={light.state.on}
+                            color="primary"
+                            onChange={() => {
+                              this._updateLight(i + 1, { on: !light.state.on });
+                            }}
+                          />
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
           </CardContent>
         </Card>
       </div>

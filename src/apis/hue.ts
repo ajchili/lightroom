@@ -46,6 +46,13 @@ export interface Light {
   productid: string;
 }
 
+export interface LightState {
+  on?: boolean;
+  sat?: number;
+  bri?: number;
+  hue?: number;
+}
+
 export const getBridges = async (): Promise<Array<Bridge>> => {
   const response = await fetch("https://discovery.meethue.com/");
   const json = await response.json();
@@ -73,7 +80,28 @@ export const getLights = async (
   internalipaddress: string,
   username: string
 ): Promise<Array<Light>> => {
-  const response = await fetch(`http://${internalipaddress}/api/${username}/lights`);
+  const response = await fetch(
+    `http://${internalipaddress}/api/${username}/lights`
+  );
   const json = await response.json();
-  return json as Array<Light>;
+  let lights: Array<Light> = [];
+  for (let id in json) {
+    lights.push(json[id] as Light);
+  }
+  return lights;
+};
+
+export const updateLight = async (
+  internalipaddress: string,
+  username: string,
+  light: number,
+  state: LightState
+): Promise<void> => {
+  await fetch(
+    `http://${internalipaddress}/api/${username}/lights/${light}/state`,
+    {
+      body: JSON.stringify(state),
+      method: "PUT"
+    }
+  );
 };
