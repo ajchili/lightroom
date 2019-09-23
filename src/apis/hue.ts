@@ -54,7 +54,12 @@ export interface LightState {
 }
 
 export const getBridges = async (): Promise<Array<Bridge>> => {
-  const response = await fetch("https://discovery.meethue.com/");
+  const response = await fetch("https://discovery.meethue.com/", {
+    headers: {
+      accept: "appplication/json"
+    },
+    method: "GET"
+  });
   const json = await response.json();
   return json as Array<Bridge>;
 };
@@ -62,10 +67,13 @@ export const getBridges = async (): Promise<Array<Bridge>> => {
 export const connectToBridge = async (
   internalipaddress: string
 ): Promise<string> => {
-  const response = await fetch(`http://${internalipaddress}/api`, {
+  const response = await fetch(`https://${internalipaddress}/api`, {
     body: JSON.stringify({
       devicetype: "lightroom#web"
     }),
+    headers: {
+      accept: "appplication/json"
+    },
     method: "POST"
   });
   const json = await response.json();
@@ -81,7 +89,13 @@ export const getLights = async (
   username: string
 ): Promise<Array<Light>> => {
   const response = await fetch(
-    `http://${internalipaddress}/api/${username}/lights`
+    `https://${internalipaddress}/api/${username}/lights`,
+    {
+      headers: {
+        accept: "appplication/json"
+      },
+      method: "GET"
+    }
   );
   const json = await response.json();
   let lights: Array<Light> = [];
@@ -98,9 +112,12 @@ export const updateLight = async (
   state: LightState
 ): Promise<void> => {
   await fetch(
-    `http://${internalipaddress}/api/${username}/lights/${light}/state`,
+    `https://${internalipaddress}/api/${username}/lights/${light}/state`,
     {
       body: JSON.stringify(state),
+      headers: {
+        accept: "appplication/json"
+      },
       method: "PUT"
     }
   );
