@@ -23,6 +23,7 @@ interface State {
   fetchLightsInterval?: NodeJS.Timeout;
   lights: Array<Light>;
   username: string;
+  strobe?: NodeJS.Timeout;
 }
 
 export default class extends Component<any, State> {
@@ -90,8 +91,6 @@ export default class extends Component<any, State> {
   _updateLight = async (light: number, state: LightState) => {
     const { bridgeAddress, username } = this.state;
 
-    console.log(state);
-
     if (bridgeAddress && username) {
       try {
         await updateLight(bridgeAddress, username, light, state);
@@ -102,13 +101,33 @@ export default class extends Component<any, State> {
     }
   };
 
+  _toggleStrobe = () => {
+    const { strobe } = this.state;
+    if (strobe) {
+      clearInterval(strobe);
+    } else {
+      const interval = setInterval(async () => {
+        const { bridgeAddress, username, lights } = this.state;
+
+        if (bridgeAddress && username) {
+          lights.forEach((light: Light, i: number) => {
+            this._updateLight(i + 1, {
+              on: !light.state.on
+            });
+          });
+        }
+      }, 1000);
+      this.setState({ strobe: interval });
+    }
+  };
+
   render() {
     const { bridgeAddress, lights } = this.state;
 
-    const canConnect =
-      bridgeAddress.length !== 0 &&
-      (bridgeAddress !== (window.localStorage.getItem("bridgeAddress") || "") ||
-        !window.localStorage.getItem("username"));
+    const isConnected =
+      bridgeAddress === (window.localStorage.getItem("bridgeAddress") || "") &&
+      !!window.localStorage.getItem("username");
+    const canConnect = bridgeAddress.length !== 0 && !isConnected;
 
     return (
       <div
@@ -147,6 +166,29 @@ export default class extends Component<any, State> {
                 disabled={bridgeAddress.length !== 0}
               >
                 Detect
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={this._toggleStrobe}
+                disabled={!isConnected}
+              >
+                Strobe
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => {
+                  window.localStorage.clear();
+                  this.setState({
+                    bridgeAddress: "",
+                    username: "",
+                    lights: []
+                  });
+                }}
+                disabled={!isConnected}
+              >
+                Disconnect
               </Button>
             </ButtonGroup>
             <Grid container spacing={3} style={{ marginTop: 5 }}>
