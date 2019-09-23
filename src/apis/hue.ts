@@ -57,7 +57,7 @@ export const connectToBridge = async (
 ): Promise<string> => {
   const response = await fetch(`http://${internalipaddress}/api`, {
     body: JSON.stringify({
-      devicetype: "my_hue_app#lightroom"
+      devicetype: "lightroom#web"
     }),
     method: "POST"
   });
@@ -73,7 +73,7 @@ export const getLights = async (
   internalipaddress: string,
   username: string
 ): Promise<Array<Light>> => {
-  const response = await fetch(`http://${internalipaddress}/api/${username}`);
+  const response = await fetch(`http://${internalipaddress}/api/${username}/lights`);
   const json = await response.json();
-  return json.lights as Array<Light>;
+  return json as Array<Light>;
 };
