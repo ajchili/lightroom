@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as api from "../apis/hue";
+import { LightState } from "../types/hue";
 
 const router = Router();
 
@@ -61,7 +62,7 @@ router.put("/light", async (req, res) => {
     const error = `A ${missing.map((e: string) => `"${e}"`).join(", ")} must be provided!`;
     return res.status(400).json({ error });
   }
-  const state: api.LightState = _state;
+  const state: LightState = _state;
   try {
     const status = await api.updateLight(internalipaddress, username, light, state);
     res.json(status);
