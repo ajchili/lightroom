@@ -2,24 +2,29 @@
   "name": "lightroom",
   "version": "1.0.0",
   "description": "Simple web app to control Philips Hue lights.",
-  "main": "src/index.ts",
+  "main": "src/index.tsx",
   "repository": "https://github.com/ajchili/lightroom",
   "author": "Kirin Patel <kirinpatel@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
+    "clear": "rm -rf ./dist",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
-    "build": "tsc",
-    "dev": "nodemon --watch src -e ts --exec yarn dev:start",
+    "build": "yarn clear && tsc",
+    "dev": "nodemon --watch src -e ts,tsx --exec yarn dev:start",
     "dev:start": "ts-node .",
     "prestart": "yarn build",
     "start": "node ./dist/index.js"
   },
   "dependencies": {
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.4",
     "axios": "^0.19.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
