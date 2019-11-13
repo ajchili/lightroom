@@ -5,14 +5,8 @@
   "defaultSeverity": "warn",
   "linterOptions": {
     "exclude": [
-      "config/**/*.js",
-      "node_modules/**/*.ts",
-      "src/apis/**/*.ts",
-      "coverage/lcov-report/*.js",
-      "backstop_data/**/*.js",
-      "generated/**",
-      "src/api/*.ts",
-      "scripts/**"
+      "node_modules/*",
+      "dist/*"
     ],
     "format": "verbose"
   },
