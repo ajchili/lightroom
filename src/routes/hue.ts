@@ -5,8 +5,12 @@ import { LightState } from "../types/hue";
 const router = Router();
 
 router.get("/bridges", async (_, res) => {
-  const bridges = await api.getBridges();
-  res.json(bridges);
+  try {
+    const bridges = await api.getBridges();
+    res.json(bridges);
+  } catch {
+    res.status(500).send();
+  }
 });
 
 router.post("/bridge/connect", async (req, res) => {
