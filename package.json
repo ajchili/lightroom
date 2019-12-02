@@ -10,10 +10,9 @@
   "scripts": {
     "clear": "rm -rf ./dist",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
-    "build": "npm clear && tsc",
-    "dev": "nodemon --watch src -e ts,tsx --exec npm dev:start",
+    "build": "yarn clear && tsc",
+    "dev": "nodemon --watch src -e ts,tsx --exec yarn dev:start",
     "dev:start": "ts-node .",
-    "prestart": "npm build",
     "start": "node ./dist/index.js"
   },
   "dependencies": {
