@@ -2,6 +2,15 @@
   <% for (let i = 0; i < lights.length; i++) { %>
   <div class="col-sm-6 col-lg-4 mb-5">
     <div class="card">
+      <% if (lights[i].state.on && !!lights[i].state.xy) { %>
+      <div
+        id="lightColorIndicator<%= i %>"
+        style="width: 100%;"
+        onclick="document.getElementById('lightStateColor<%= i %>').click();"
+      >
+        <span class="badge badge-dark m-3">Click to Change Color</span>
+      </div>
+      <% } %>
       <div class="card-body">
         <h5 class="card-title">
           <%= lights[i].name %> <% if (lights[i].state.on) { %>
@@ -11,6 +20,49 @@
           <% } %>
         </h5>
         <p class="text-muted"><%= lights[i].type %></p>
+        <form id="lightStateForm<%= i %>" action="/hue/light" method="POST">
+          <input
+            hidden
+            name="internalipaddress"
+            value="<%= internalipaddress %>"
+          />
+          <input hidden name="username" value="<%= username %>" />
+          <input hidden name="light" value="<%= i + 1 %>" />
+          <% if (lights[i].state.on) { %>
+          <label>Brightness</label>
+          <input
+            type="range"
+            class="form-control-range"
+            name="bri"
+            min="0"
+            max="254"
+            value="<%= lights[i].state.bri %>"
+            onchange="document.getElementById('lightStateForm<%= i %>').submit();"
+          />
+          <% } %> <% if (!!lights[i].state.xy) { %>
+          <input
+            hidden
+            id="lightStateX<%= i %>"
+            type="range"
+            name="x"
+            min="0"
+            max="1"
+            step="any"
+            value="<%= lights[i].state.xy[0] %>"
+          />
+          <input
+            hidden
+            id="lightStateY<%= i %>"
+            type="range"
+            name="y"
+            min="0"
+            max="1"
+            step="any"
+            value="<%= lights[i].state.xy[1] %>"
+          />
+          <input hidden id="lightStateColor<%= i %>" type="color" />
+          <% } %>
+        </form>
         <% if (lights[i].state.on) { %>
         <form action="/hue/light" method="POST">
           <input
@@ -51,3 +103,109 @@
   </div>
   <% } %>
 </div>
+
+<script>
+  (() => {
+    const lights = JSON.parse(`<%- JSON.stringify(lights) %>`);
+
+    const handleColorChange = e => {
+      const hex = e.target.value;
+      const r = parseInt(hex.substr(1, 2), 16) / 255;
+      const g = parseInt(hex.substr(3, 2), 16) / 255;
+      const b = parseInt(hex.substr(5, 2), 16) / 255;
+      const xy = getXY(r, g, b);
+      const i = e.target.id.split("Color")[1];
+      document.getElementById(`lightStateX${i}`).value = xy[0];
+      document.getElementById(`lightStateY${i}`).value = xy[1];
+      document.getElementById(`lightStateForm${i}`).submit();
+    };
+
+    // https://www.reddit.com/r/tasker/comments/4mzd01/using_rgb_colours_with_philips_hue_bulbs/?utm_source=share&utm_medium=web2x
+    const getXY = (red, green, blue) => {
+      if (red > 0.04045) {
+        red = Math.pow((red + 0.055) / (1.0 + 0.055), 2.4);
+      } else red = red / 12.92;
+
+      if (green > 0.04045) {
+        green = Math.pow((green + 0.055) / (1.0 + 0.055), 2.4);
+      } else green = green / 12.92;
+
+      if (blue > 0.04045) {
+        blue = Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4);
+      } else blue = blue / 12.92;
+
+      var X = red * 0.664511 + green * 0.154324 + blue * 0.162028;
+      var Y = red * 0.283881 + green * 0.668433 + blue * 0.047685;
+      var Z = red * 0.000088 + green * 0.07231 + blue * 0.986039;
+      var x = X / (X + Y + Z);
+      var y = Y / (X + Y + Z);
+      return new Array(x, y);
+    };
+
+    // https://stackoverflow.com/a/41780051
+    const getHexFromXY = (x, y, bri) => {
+      z = 1.0 - x - y;
+
+      Y = bri / 255.0; // Brightness of lamp
+      X = (Y / y) * x;
+      Z = (Y / y) * z;
+      r = X * 1.612 - Y * 0.203 - Z * 0.302;
+      g = -X * 0.509 + Y * 1.412 + Z * 0.066;
+      b = X * 0.026 - Y * 0.072 + Z * 0.962;
+      r =
+        r <= 0.0031308
+          ? 12.92 * r
+          : (1.0 + 0.055) * Math.pow(r, 1.0 / 2.4) - 0.055;
+      g =
+        g <= 0.0031308
+          ? 12.92 * g
+          : (1.0 + 0.055) * Math.pow(g, 1.0 / 2.4) - 0.055;
+      b =
+        b <= 0.0031308
+          ? 12.92 * b
+          : (1.0 + 0.055) * Math.pow(b, 1.0 / 2.4) - 0.055;
+      maxValue = Math.max(r, g, b);
+      r /= maxValue;
+      g /= maxValue;
+      b /= maxValue;
+      r = r * 255;
+      if (r < 0) {
+        r = 255;
+      }
+      g = g * 255;
+      if (g < 0) {
+        g = 255;
+      }
+      b = b * 255;
+      if (b < 0) {
+        b = 255;
+      }
+
+      r = Math.round(r).toString(16);
+      g = Math.round(g).toString(16);
+      b = Math.round(b).toString(16);
+
+      if (r.length < 2) r = "0" + r;
+      if (g.length < 2) g = "0" + g;
+      if (b.length < 2) b = "0" + r;
+
+      return `#${r}${g}${b}`;
+    };
+
+    for (let i = 0; i < parseInt("<%= lights.length %>"); i++) {
+      const id = `lightStateColor${i}`;
+      if (document.getElementById(id)) {
+        document.getElementById(id).onchange = handleColorChange;
+        const hex = getHexFromXY(
+          parseFloat(lights[i].state.xy[0]),
+          parseFloat(lights[i].state.xy[1]),
+          parseInt(lights[i].state.bri)
+        );
+        document.getElementById(id).value = hex;
+        document.getElementById(
+          `lightColorIndicator${i}`
+        ).style.backgroundColor = hex;
+      }
+    }
+  })();
+</script>

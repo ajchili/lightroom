@@ -17,7 +17,7 @@ router.post("/bridge/connect", async (req, res) => {
   const { internalipaddress = "" } = req.body;
   if (internalipaddress.length === 0) {
     return res.status(400).json({
-      error: `An "internalipaddress" must be provided!`,
+      error: `An "internalipaddress" must be provided!`
     });
   }
   try {
@@ -25,7 +25,7 @@ router.post("/bridge/connect", async (req, res) => {
     res.render("hue/bridge/connect.ejs", {
       internalipaddress,
       username,
-      error: null,
+      error: null
     });
   } catch (err) {
     if (
@@ -34,13 +34,13 @@ router.post("/bridge/connect", async (req, res) => {
       res.render("hue/bridge/connect.ejs", {
         internalipaddress,
         username: "",
-        error: "Link button not pressed on bridge!",
+        error: "Link button not pressed on bridge!"
       });
     } else {
       res.render("hue/bridge/connect.ejs", {
         internalipaddress,
         username: "",
-        error: "An unexpected error occurred!",
+        error: "An unexpected error occurred!"
       });
     }
   }
@@ -76,6 +76,10 @@ router.post("/light", async (req, res) => {
     username = "",
     light = -1,
     on = null,
+    bri = null,
+    hue = null,
+    x = null,
+    y = null
   } = req.body;
   const missing: string[] = [];
   if (internalipaddress.length === 0) {
@@ -87,8 +91,8 @@ router.post("/light", async (req, res) => {
   if (light === -1) {
     missing.push("light");
   }
-  if (on === null) {
-    missing.push("on");
+  if (typeof x !== typeof y) {
+    missing.push("xy");
   }
   if (missing.length > 0) {
     const error = `A ${missing
@@ -97,16 +101,18 @@ router.post("/light", async (req, res) => {
     return res.status(400).json({ error });
   }
   const state: LightState = {
-    on: on === "true",
+    on: on ? on === "true" : undefined,
+    bri: bri ? parseInt(bri) : undefined,
+    xy: x !== null && y !== null ? [parseFloat(x), parseFloat(y)] : undefined
   };
   try {
     await api.updateLight(internalipaddress, username, light, state);
     res.redirect(
-      `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`,
+      `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`
     );
   } catch (err) {
     res.status(500).json({
-      errors: err,
+      errors: err
     });
   }
 });

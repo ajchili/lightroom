@@ -51,4 +51,5 @@ export interface LightState {
   sat?: number;
   bri?: number;
   hue?: number;
+  xy?: number[];
 }
