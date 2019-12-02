@@ -22,11 +22,27 @@ router.post("/bridge/connect", async (req, res) => {
   }
   try {
     const username = await api.connectToBridge(internalipaddress);
-    res.json({ username });
-  } catch (err) {
-    res.status(500).json({
-      errors: err,
+    res.render("hue/bridge/connect.ejs", {
+      internalipaddress,
+      username,
+      error: null,
     });
+  } catch (err) {
+    if (
+      err.some((e: any) => e.error.description === "link button not pressed")
+    ) {
+      res.render("hue/bridge/connect.ejs", {
+        internalipaddress,
+        username: "",
+        error: "Link button not pressed on bridge!",
+      });
+    } else {
+      res.render("hue/bridge/connect.ejs", {
+        internalipaddress,
+        username: "",
+        error: "An unexpected error occurred!",
+      });
+    }
   }
 });
 
@@ -40,15 +56,27 @@ router.get("/lights", async (req, res) => {
     missing.push("username");
   }
   if (missing.length > 0) {
-    const error = `A ${missing.map((e: string) => `"${e}"`).join(", ")} must be provided!`;
+    const error = `A ${missing
+      .map((e: string) => `"${e}"`)
+      .join(", ")} must be provided!`;
     return res.status(400).json({ error });
   }
-  const lights = await api.getLights(internalipaddress, username);
-  res.json(lights);
+  try {
+    const lights = await api.getLights(internalipaddress, username);
+    res.render("hue/lights", { internalipaddress, username, lights });
+  } catch (err) {
+    console.log(err);
+    res.render("hue/lights", { lights: [] });
+  }
 });
 
-router.put("/light", async (req, res) => {
-  const { internalipaddress = "", username = "", light = -1, state: _state = null } = req.body;
+router.post("/light", async (req, res) => {
+  const {
+    internalipaddress = "",
+    username = "",
+    light = -1,
+    on = null,
+  } = req.body;
   const missing: string[] = [];
   if (internalipaddress.length === 0) {
     missing.push("internalipaddress");
@@ -59,17 +87,23 @@ router.put("/light", async (req, res) => {
   if (light === -1) {
     missing.push("light");
   }
-  if (_state === null) {
-    missing.push("state");
+  if (on === null) {
+    missing.push("on");
   }
   if (missing.length > 0) {
-    const error = `A ${missing.map((e: string) => `"${e}"`).join(", ")} must be provided!`;
+    const error = `A ${missing
+      .map((e: string) => `"${e}"`)
+      .join(", ")} must be provided!`;
     return res.status(400).json({ error });
   }
-  const state: LightState = _state;
+  const state: LightState = {
+    on: on === "true",
+  };
   try {
-    const status = await api.updateLight(internalipaddress, username, light, state);
-    res.json(status);
+    await api.updateLight(internalipaddress, username, light, state);
+    res.redirect(
+      `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`,
+    );
   } catch (err) {
     res.status(500).json({
       errors: err,

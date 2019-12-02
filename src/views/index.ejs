@@ -6,6 +6,7 @@
   <body>
     <%- include ('../templates/navbar.ejs') %>
     <div class="container mt-5">
+      <%- include ('../templates/connectToBridgeForm.ejs') %>
       <% if (bridges.length === 0) { %>
       <div class="alert alert-warning" role="alert">
         Unable to detect any Philips Hue bridges on your network!

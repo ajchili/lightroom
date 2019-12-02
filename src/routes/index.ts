@@ -11,7 +11,7 @@ router.get("/", async (_, res) => {
   } catch {
     // Ignore error
   }
-  res.render("index", { bridges });
+  res.render("index", { bridges, internalipaddress: "", username: "" });
 });
 
 export default router;

@@ -1,0 +1,45 @@
+<form action="/hue/bridge/connect" method="POST">
+  <div class="form-group">
+    <label for="internalipaddress">Bridge IP Address</label>
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control"
+        id="internalipaddress"
+        name="internalipaddress"
+        placeholder="127.0.0.1"
+        aria-label="Bridge IP Address"
+        aria-describedby="bridgeIPAddressButton"
+        value="<%= internalipaddress %>"
+      />
+      <div class="input-group-append">
+        <button
+          class="btn btn-outline-primary"
+          type="submit"
+          id="bridgeIPAddressButton"
+        >
+          Connect
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+  (() => {
+    const internalipaddress = "<%= internalipaddress %>";
+    const username = "<%= username %>";
+    if (internalipaddress.length > 0 && username.length > 0) {
+      window.localStorage.setItem("internalipaddress", internalipaddress);
+      window.localStorage.setItem("username", username);
+      window.location.href = "/hue/lights";
+    }
+    const localInternalipAddress = window.localStorage.getItem(
+      "internalipaddress"
+    );
+    const localUsername = window.localStorage.getItem("username");
+    if (localInternalipAddress.length > 0 && localUsername.length > 0) {
+      window.location.href = `/hue/lights?internalipaddress=${localInternalipAddress}&username=${localUsername}`;
+    }
+  })();
+</script>
