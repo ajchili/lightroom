@@ -17,7 +17,7 @@ app.use(partials());
 app.set("views", "./src/views");
 app.set("view engine", "ejs");
 
-app.get("/", index);
+app.use("/", index);
 app.use("/hue", hue);
 
 app.listen(PORT, () => {
