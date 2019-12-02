@@ -14,4 +14,16 @@ router.get("/", async (_, res) => {
   res.render("index", { bridges, internalipaddress: "", username: "" });
 });
 
+router.get("/connect", async (req, res) => {
+  const { internalipaddress = "", username = "" } = req.query;
+  try {
+    await api.getLights(internalipaddress, username);
+    res.render("connect", { error: null });
+  } catch {
+    res.render("connect", {
+      error: "Invalid internalipaddress and/or username.",
+    });
+  }
+});
+
 export default router;

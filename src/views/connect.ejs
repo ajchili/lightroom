@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include ('../templates/head.ejs') %>
+  </head>
+  <body>
+    <%- include ('../templates/navbar.ejs') %>
+    <div class="container mt-5">
+      <% if (error) { %>
+      <%- include ('../templates/alerts/dismissableError.ejs') %>
+      <% } %>
+    </div>
+    <%- include ('../templates/scripts.ejs') %>
+
+    <script>
+      (() => {
+        const internalipaddress = window.localStorage.getItem(
+          "internalipaddress"
+        );
+        const username = window.localStorage.getItem("username");
+        const error = JSON.parse(`<%- error %>` || null);
+        if (internalipaddress.length > 0 && username.length > 0 && !error) {
+          window.localStorage.setItem("internalipaddress", internalipaddress);
+          window.localStorage.setItem("username", username);
+          window.location.href = `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`;
+        }
+      })();
+    </script>
+  </body>
+</html>
