@@ -14,10 +14,8 @@
 
     <script>
       (() => {
-        const internalipaddress = window.localStorage.getItem(
-          "internalipaddress"
-        );
-        const username = window.localStorage.getItem("username");
+        const internalipaddress = "<%= internalipaddress %>";
+        const username = "<%= username %>";
         const error = JSON.parse(`<%- error %>` || null);
         if (internalipaddress.length > 0 && username.length > 0 && !error) {
           window.localStorage.setItem("internalipaddress", internalipaddress);

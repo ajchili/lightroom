@@ -18,10 +18,12 @@ router.get("/connect", async (req, res) => {
   const { internalipaddress = "", username = "" } = req.query;
   try {
     await api.getLights(internalipaddress, username);
-    res.render("connect", { error: null });
+    res.render("connect", { internalipaddress, username, error: null });
   } catch {
     res.render("connect", {
       error: "Invalid internalipaddress and/or username.",
+      internalipaddress,
+      username,
     });
   }
 });
