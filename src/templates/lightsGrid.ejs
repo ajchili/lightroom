@@ -1,107 +1,116 @@
-<div class="row">
-  <% for (let i = 0; i < lights.length; i++) { %>
-  <div class="col-sm-6 col-lg-4 mb-5">
-    <div class="card">
-      <% if (lights[i].state.on && !!lights[i].state.xy) { %>
-      <div
-        id="lightColorIndicator<%= i %>"
-        style="width: 100%;"
-        onclick="document.getElementById('lightStateColor<%= i %>').click();"
-      >
-        <span class="badge badge-dark m-3">Click to Change Color</span>
-      </div>
-      <% } %>
-      <div class="card-body">
-        <h5 class="card-title">
-          <%= lights[i].name %> <% if (lights[i].state.on) { %>
-          <span class="badge badge-success">On</span>
-          <% } else { %>
-          <span class="badge badge-danger">Off</span>
-          <% } %>
-        </h5>
-        <p class="text-muted"><%= lights[i].type %></p>
-        <form id="lightStateForm<%= i %>" action="/hue/light" method="POST">
-          <input
-            hidden
-            name="internalipaddress"
-            value="<%= internalipaddress %>"
-          />
-          <input hidden name="username" value="<%= username %>" />
-          <input hidden name="light" value="<%= i + 1 %>" />
-          <% if (lights[i].state.on) { %>
-          <label>Brightness</label>
-          <input
-            type="range"
-            class="form-control-range"
-            name="bri"
-            min="0"
-            max="254"
-            value="<%= lights[i].state.bri %>"
-            onchange="document.getElementById('lightStateForm<%= i %>').submit();"
-          />
-          <% } %> <% if (!!lights[i].state.xy) { %>
-          <input
-            hidden
-            id="lightStateX<%= i %>"
-            type="range"
-            name="x"
-            min="0"
-            max="1"
-            step="any"
-            value="<%= lights[i].state.xy[0] %>"
-          />
-          <input
-            hidden
-            id="lightStateY<%= i %>"
-            type="range"
-            name="y"
-            min="0"
-            max="1"
-            step="any"
-            value="<%= lights[i].state.xy[1] %>"
-          />
-          <input hidden id="lightStateColor<%= i %>" type="color" />
-          <% } %>
-        </form>
-        <% if (lights[i].state.on) { %>
-        <form action="/hue/light" method="POST">
-          <input
-            hidden
-            name="internalipaddress"
-            value="<%= internalipaddress %>"
-          />
-          <input hidden name="username" value="<%= username %>" />
-          <input hidden name="light" value="<%= i + 1 %>" />
-          <input
-            hidden
-            type="checkbox"
-            name="on"
-            value="false"
-            checked="true"
-          />
-          <button class="btn btn-primary btn-sm" type="submit">
-            Turn off
-          </button>
-        </form>
-        <% } else { %>
-        <form action="/hue/light" method="POST">
-          <input
-            hidden
-            name="internalipaddress"
-            value="<%= internalipaddress %>"
-          />
-          <input hidden name="username" value="<%= username %>" />
-          <input hidden name="light" value="<%= i + 1 %>" />
-          <input hidden type="checkbox" name="on" value="true" checked="true" />
-          <button class="btn btn-primary btn-sm" type="submit">
-            Turn on
-          </button>
-        </form>
+<div>
+  <h1>Lights</h1>
+  <div class="row">
+    <% for (let i = 0; i < lights.length; i++) { %>
+    <div class="col-sm-6 col-lg-4 mb-5">
+      <div class="card">
+        <% if (lights[i].state.on && !!lights[i].state.xy) { %>
+        <div
+          id="lightColorIndicator<%= i %>"
+          style="width: 100%;"
+          onclick="document.getElementById('lightStateColor<%= i %>').click();"
+        >
+          <span class="badge badge-dark m-3">Click to Change Color</span>
+        </div>
         <% } %>
+        <div class="card-body">
+          <h5 class="card-title">
+            <%= lights[i].name %> <% if (lights[i].state.on) { %>
+            <span class="badge badge-success">On</span>
+            <% } else { %>
+            <span class="badge badge-danger">Off</span>
+            <% } %>
+          </h5>
+          <p class="text-muted"><%= lights[i].type %></p>
+          <form id="lightStateForm<%= i %>" action="/hue/light" method="POST">
+            <input
+              hidden
+              name="internalipaddress"
+              value="<%= internalipaddress %>"
+            />
+            <input hidden name="username" value="<%= username %>" />
+            <input hidden name="light" value="<%= i + 1 %>" />
+            <% if (lights[i].state.on) { %>
+            <label>Brightness</label>
+            <input
+              type="range"
+              class="form-control-range"
+              name="bri"
+              min="0"
+              max="254"
+              value="<%= lights[i].state.bri %>"
+              onchange="document.getElementById('lightStateForm<%= i %>').submit();"
+            />
+            <% } %> <% if (!!lights[i].state.xy) { %>
+            <input
+              hidden
+              id="lightStateX<%= i %>"
+              type="range"
+              name="x"
+              min="0"
+              max="1"
+              step="any"
+              value="<%= lights[i].state.xy[0] %>"
+            />
+            <input
+              hidden
+              id="lightStateY<%= i %>"
+              type="range"
+              name="y"
+              min="0"
+              max="1"
+              step="any"
+              value="<%= lights[i].state.xy[1] %>"
+            />
+            <input hidden id="lightStateColor<%= i %>" type="color" />
+            <% } %>
+          </form>
+          <% if (lights[i].state.on) { %>
+          <form action="/hue/light" method="POST">
+            <input
+              hidden
+              name="internalipaddress"
+              value="<%= internalipaddress %>"
+            />
+            <input hidden name="username" value="<%= username %>" />
+            <input hidden name="light" value="<%= i + 1 %>" />
+            <input
+              hidden
+              type="checkbox"
+              name="on"
+              value="false"
+              checked="true"
+            />
+            <button class="btn btn-primary btn-sm" type="submit">
+              Turn off
+            </button>
+          </form>
+          <% } else { %>
+          <form action="/hue/light" method="POST">
+            <input
+              hidden
+              name="internalipaddress"
+              value="<%= internalipaddress %>"
+            />
+            <input hidden name="username" value="<%= username %>" />
+            <input hidden name="light" value="<%= i + 1 %>" />
+            <input
+              hidden
+              type="checkbox"
+              name="on"
+              value="true"
+              checked="true"
+            />
+            <button class="btn btn-primary btn-sm" type="submit">
+              Turn on
+            </button>
+          </form>
+          <% } %>
+        </div>
       </div>
     </div>
+    <% } %>
   </div>
-  <% } %>
 </div>
 
 <script>

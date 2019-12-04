@@ -65,7 +65,6 @@ router.get("/lights", async (req, res) => {
     const lights = await api.getLights(internalipaddress, username);
     res.render("hue/lights", { internalipaddress, username, lights });
   } catch (err) {
-    console.log(err);
     res.render("hue/lights", { lights: [] });
   }
 });
@@ -77,7 +76,6 @@ router.post("/light", async (req, res) => {
     light = -1,
     on = null,
     bri = null,
-    hue = null,
     x = null,
     y = null
   } = req.body;
@@ -101,19 +99,48 @@ router.post("/light", async (req, res) => {
     return res.status(400).json({ error });
   }
   const state: LightState = {
-    on: on ? on === "true" : undefined,
     bri: bri ? parseInt(bri) : undefined,
+    on: on ? on === "true" : undefined,
     xy: x !== null && y !== null ? [parseFloat(x), parseFloat(y)] : undefined
   };
   try {
     await api.updateLight(internalipaddress, username, light, state);
     res.redirect(
-      `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`
+      `/hue/lights?internalipaddress=${internalipaddress}&username=${username}`,
     );
   } catch (err) {
     res.status(500).json({
       errors: err
     });
+  }
+});
+
+router.post("/effects/strobe", async (req, res) => {
+  const { internalipaddress = "", username = "" } = req.body;
+  const missing: string[] = [];
+  if (internalipaddress.length === 0) {
+    missing.push("internalipaddress");
+  }
+  if (username.length === 0) {
+    missing.push("username");
+  }
+  if (missing.length > 0) {
+    const error = `A ${missing
+      .map((e: string) => `"${e}"`)
+      .join(", ")} must be provided!`;
+    return res.status(400).json({ error });
+  }
+  try {
+    const lights = await api.getLights(internalipaddress, username);
+    for (let i = 0; i < lights.length; i++) {
+      const state: LightState = {
+        on: !lights[i].state.on,
+      };
+      await api.updateLight(internalipaddress, username, i + 1, state);
+    }
+    return res.status(200).send();
+  } catch (err) {
+    res.status(500).send();
   }
 });
 

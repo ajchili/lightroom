@@ -1,0 +1,44 @@
+<div>
+  <h1>Effects</h1>
+  <button id="strobeLightsButton" class="btn btn-outline-primary btn-sm">
+    Strobe
+  </button>
+</div>
+
+<script>
+  (() => {
+    let isStrobingLights = false;
+    const strobeLightsButton = document.getElementById("strobeLightsButton");
+    const lights = JSON.parse(`<%- JSON.stringify(lights) %>`);
+    let lightStrobeInterval;
+
+    const strobeLights = () => {
+      isStrobingLights = !isStrobingLights;
+      if (isStrobingLights) {
+        strobeLightsButton.classList.remove("btn-outline-primary");
+        strobeLightsButton.classList.add("btn-primary");
+        lightStrobeInterval = setInterval(async () => {
+          const response = await fetch("/hue/effects/strobe", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              internalipaddress: "<%= internalipaddress %>",
+              username: "<%= username %>"
+            })
+          });
+        }, 1250);
+      } else {
+        strobeLightsButton.classList.remove("btn-primary");
+        strobeLightsButton.classList.add("btn-outline-primary");
+        if (lightStrobeInterval !== null) {
+          clearInterval(lightStrobeInterval);
+        }
+      }
+    };
+
+    strobeLightsButton.onclick = strobeLights;
+  })();
+</script>
