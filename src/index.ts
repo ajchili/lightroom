@@ -6,7 +6,7 @@ import partials from "express-partials";
 import index from "./routes";
 import hue from "./routes/hue";
 
-const PORT = process.env.port || 8080;
+const PORT = process.env.PORT || "80";
 
 const app = express() as Application;
 
